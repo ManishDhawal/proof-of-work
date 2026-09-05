@@ -1,0 +1,154 @@
+---
+title: "The dashboard that argued against its own data"
+subtitle: "Power BI, a metric dictionary, and what thirty identical cells will tell you"
+role: "Solo project"
+period: "2025"
+stack: ["Power BI", "DAX", "dbt", "PostgreSQL"]
+repo: "https://github.com/ManishDhawal/Healthcare_Risk_Compliance_Pipeline"
+summary: "I built a three-page Power BI dashboard over a healthcare pipeline so a reviewer could act on its risk scores. The most valuable thing it produced was evidence that the underlying data was generated — and a list of three defects in the dashboard itself."
+---
+
+## The question
+
+A pipeline that ranks records for review is only half a system. Someone still has
+to open the queue, decide what to look at, and later explain to somebody senior
+why they looked at that and not something else.
+
+In the reporting I do for federal and life-sciences clients, the question that
+ends every dashboard review is the same one: *where does this number come from?*
+Not "is the chart pretty" — where does it come from, who defined it, and what
+happens to it between the source system and the tile on screen. I have watched
+that question stall a release more than once.
+
+So the brief here was two things at once. Build the dashboard a compliance
+reviewer would actually work from, and build the artefact that answers the
+question about every measure on it.
+
+## The data, and what was wrong with it
+
+The dashboard is what caught it, and it caught it in the least ambiguous way I
+have seen.
+
+<Shot
+  src="/work/dashboard-operations.png"
+  w="1327"
+  h="764"
+  alt="Power BI operations page: average billing by admission type, and a matrix of admissions and average billing across five insurers and six conditions."
+  caption="Thirty cells. Average billing in every one of them sits between $24,858 and $26,117."
+/>
+
+Five insurers by six conditions is thirty independent cells. Every one lands
+within about 5% of the same figure, and the column totals are tighter still.
+The bar chart above it — elective, urgent and emergency — is three bars of
+visually identical height.
+
+Widen it out and nothing moves anywhere:
+
+<StatRow from="flatness" />
+
+<Bars from="billingByCondition" />
+
+Real hospital billing does not behave like this. An emergency admission costs
+more than an elective one. A three-week stay costs more than an overnight. Payer
+mix moves the average. Flatness this uniform across every dimension at once has
+one ordinary explanation: the columns were sampled independently of each other.
+
+That reframed the project. **No cross-sectional finding from this data is real** —
+not one. The pipeline and the documentation are the artefacts worth reviewing;
+the healthcare conclusions are not conclusions. I would rather say that at the top
+of a README than have a reviewer work it out and wonder what else I had not
+checked.
+
+## What I did, and the call I would defend
+
+The deliverable I care about here is not the `.pbix`. It is
+[`docs/METRICS.md`](https://github.com/ManishDhawal/Healthcare_Risk_Compliance_Pipeline/blob/main/docs/METRICS.md):
+every published measure, its definition, and its lineage from source column
+through the dbt staging view to the tile. It lives in the repo beside the code so
+a definition and its implementation change in the same commit.
+
+It records the choices that are invisible on screen and contentious in a room:
+
+- **Billing is attributed to the admission month, not the discharge month.** An
+  episode spanning a month boundary lands entirely where it started. Apportioning
+  across days is equally defensible; the dashboard picks one and says so.
+- **`avg_los_days` excludes rows with a null length of stay. `admissions` does
+  not.** So the volume count and the denominator behind the average differ. That
+  is deliberate — a missing discharge date should not delete an admission from
+  the volume — but it is exactly the discrepancy someone finds in month three and
+  escalates.
+- **`risk_score` is a ranking, not a probability.** A 0.65 does not mean 65%
+  likely to be a problem.
+
+**The call I would defend** is the smallest one on the page: the average-billing
+axis starts at zero. It produces three bars of the same height and a chart that
+appears to say nothing. Truncating that axis to a $24k–$26k window would have
+produced three visibly different bars and a story about elective admissions —
+a story that is an artefact of the axis, not the data. The chart is supposed to
+report that there is no difference. It does.
+
+## What changed
+
+The dashboard's most useful output was a negative one, and it redirected the
+whole project: the modelling work moved to detecting records that are internally
+inconsistent — an impossible stay, a charge that does not match its episode —
+rather than relationships between columns that were never there.
+
+It also turned up three defects in itself, which is the other reason to build the
+thing before writing about it:
+
+<Shot
+  src="/work/dashboard-risk.png"
+  w="1305"
+  h="789"
+  alt="Power BI risk page: a record table, a billing-versus-length-of-stay scatter, and high-risk counts by insurer."
+  caption="Name column redacted here. On the original it was the first thing on the page — on a dashboard whose title is compliance."
+/>
+
+**It displayed patient names.** First column, on the page a reviewer spends most
+of their time on, in a project branded risk and compliance. Synthetic names, but
+the practice is what gets judged. Identifiers now come out at the model layer,
+not by hiding a visual.
+
+**The scatter plots sums.** Billing against length of stay, both aggregated by
+risk tier — five points. That chart shows how big each tier is, not how the two
+measures relate. To show a relationship you plot records, or bins.
+
+**One measure does not add up.** "High risk by insurer" puts Aetna near fifty
+where the other four sit between two and three thousand. Across five roughly
+equal groups scored on a distribution that was uniform by construction, those
+bars should all be about the same height. I do not yet know whether it is the
+slicer, a relationship, or the measure — but an earlier version of this project's
+README read that bar chart as a *finding* about payer concentration. It was not
+a finding. It was a bug I had not looked at hard enough.
+
+## What I would do differently
+
+**Write the metric dictionary before the first visual, not after.** Every
+definitional question above was decided while dragging fields onto a canvas and
+reconstructed later. Deciding first would have taken an hour and produced the
+same dashboard with fewer things to explain.
+
+**Drop identifiers at the model layer from the start.** Removing a column from a
+visual is not the same as it not being in the model, and I had done the easy one.
+
+**And name the fields for people.** The axes still read `insurance_provider` and
+`admission_type` — database column names, on a page built for someone who has
+never seen the database.
+
+## Evidence
+
+- **[`docs/METRICS.md`](https://github.com/ManishDhawal/Healthcare_Risk_Compliance_Pipeline/blob/main/docs/METRICS.md)**
+  — the metric dictionary and column-level lineage
+- **[Repository](https://github.com/ManishDhawal/Healthcare_Risk_Compliance_Pipeline)**
+  — `dashboards/powerbi/Healthcare_risk.pbix`, and the dbt models behind every measure
+- **[The pipeline case study](/work/healthcare-risk-pipeline)** — where the risk
+  score on these pages comes from, and how it was eventually measured
+
+<Shot
+  src="/work/dashboard-overview.png"
+  w="1313"
+  h="769"
+  alt="Power BI overview page: admissions, average length of stay, average and total billing, admissions by month, and total billing by insurer."
+  caption="Overview page. The five insurer bars are the same height for the same reason everything else is."
+/>

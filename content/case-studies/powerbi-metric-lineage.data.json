@@ -1,0 +1,60 @@
+{
+  "flatness": [
+    {
+      "value": "0.41%",
+      "label": "Spread by admission type",
+      "note": "elective / urgent / emergency"
+    },
+    {
+      "value": "0.89%",
+      "label": "Spread by insurer",
+      "note": "five providers, ~11,000 each"
+    },
+    {
+      "value": "2.56%",
+      "label": "Spread by condition",
+      "note": "six conditions"
+    },
+    {
+      "value": "\u22120.006",
+      "label": "Billing vs length of stay",
+      "note": "Pearson r"
+    }
+  ],
+  "billingByCondition": {
+    "max": 30000,
+    "height": 260,
+    "rows": [
+      {
+        "label": "Obesity",
+        "value": 25806
+      },
+      {
+        "label": "Diabetes",
+        "value": 25638
+      },
+      {
+        "label": "Asthma",
+        "value": 25635
+      },
+      {
+        "label": "Arthritis",
+        "value": 25497
+      },
+      {
+        "label": "Hypertension",
+        "value": 25497
+      },
+      {
+        "label": "Cancer",
+        "value": 25162
+      }
+    ],
+    "format": "usd"
+  },
+  "provenance": {
+    "rows": 55500,
+    "reproduce": "dbt build",
+    "measuredAt": "2026-09-05"
+  }
+}

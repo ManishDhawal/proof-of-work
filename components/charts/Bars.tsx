@@ -13,6 +13,8 @@ import {
   YAxis,
 } from "recharts";
 
+import { FORMATS, type FormatName } from "@/lib/formats";
+
 import { font, palette, resolveChartMode, type Mode } from "./theme";
 
 export type BarRow = {
@@ -28,15 +30,15 @@ type Props = {
   data: BarRow[];
   /** Axis maximum. Defaults to the data max, rounded up. */
   max?: number;
-  /** Formats values in labels and tooltips. */
-  format?: (n: number) => string;
+  /** Name of a format in lib/formats. Defaults to decimal3, which suits 0–1 scores. */
+  format?: FormatName;
   /** Series names. Only used when rows carry a `baseline`. */
   names?: { value: string; baseline: string };
   /** Height in px. Grows with row count if omitted. */
   height?: number;
 };
 
-const fmtDefault = (n: number) => n.toFixed(3);
+
 
 /**
  * Recharts 3 hands formatters a loose value type that can be undefined or a
@@ -60,7 +62,7 @@ function looseFormat(format: (n: number) => string) {
 export function Bars({
   data,
   max,
-  format = fmtDefault,
+  format = "decimal3",
   names,
   height,
 }: Props) {
@@ -83,7 +85,7 @@ export function Bars({
   }, []);
 
   const c = palette[mode];
-  const fmt = looseFormat(format);
+  const fmt = looseFormat(FORMATS[format] ?? FORMATS.decimal3);
   const grouped = data.some((d) => d.baseline !== undefined);
   const domainMax = max ?? Math.ceil(Math.max(...data.map((d) => d.value)) * 10) / 10;
   // Recharts 3 picks its own tick stops and would end this axis at 0.900,

@@ -61,12 +61,6 @@ export function getCaseStudy(slug: string): CaseStudy | null {
 /** Projects not yet written up. Shown so the shape of the work is visible. */
 export const PLANNED = [
   {
-    title: "Power BI reporting, documented end to end",
-    blurb:
-      "A dashboard is only as trustworthy as its metric definitions. Column-level lineage from source field to KPI, and the definitional calls a reviewer would probe.",
-    stack: ["Power BI", "dbt", "SQL"],
-  },
-  {
     title: "Chest X-ray classification: diagnosing the skew",
     blurb:
       "A team capstone across 112,120 scans with a 266-to-1 class imbalance. My half was the data evaluation and the augmentation strategy built to attack it — and why the rare classes stayed out of reach.",

@@ -1,7 +1,12 @@
+import Image from "next/image";
+
+import { FORMAT_NAMES, type FormatName } from "@/lib/formats";
+
 import { Bars, type BarRow } from "@/components/charts/Bars";
 import { StatRow, type Stat } from "@/components/charts/StatRow";
 
 type Data = Record<string, unknown>;
+
 
 /** A chart block in a case study's .data.json: its rows plus its configuration. */
 type ChartBlock = {
@@ -9,6 +14,8 @@ type ChartBlock = {
   max?: number;
   height?: number;
   names?: { value: string; baseline: string };
+  /** One of FORMATS. Defaults to decimal3, which suits 0–1 scores. */
+  format?: FormatName;
 };
 
 /**
@@ -62,12 +69,46 @@ export function mdxComponents(data: Data) {
 
     Bars: ({ from }: { from: string }) => {
       const { rows, ...config } = block(from);
+      if (config.format && !FORMAT_NAMES.includes(config.format)) {
+        throw new Error(
+          `Chart "${from}" asks for format "${config.format}". Available: ${FORMAT_NAMES.join(", ")}`,
+        );
+      }
       return (
         <figure className="figure">
           <Bars data={rows} {...config} />
         </figure>
       );
     },
+
+    /**
+     * A screenshot with its caption. All-string props, per the constraint above.
+     * Width and height are given as strings and coerced here.
+     */
+    Shot: ({
+      src,
+      alt,
+      caption,
+      w,
+      h,
+    }: {
+      src: string;
+      alt: string;
+      caption?: string;
+      w?: string;
+      h?: string;
+    }) => (
+      <figure className="figure shot">
+        <Image
+          src={src}
+          alt={alt}
+          width={Number(w ?? 1300)}
+          height={Number(h ?? 780)}
+          sizes="(max-width: 820px) 100vw, 800px"
+        />
+        {caption && <figcaption>{caption}</figcaption>}
+      </figure>
+    ),
 
     /** Reproducibility footnote, rendered from the data rather than retyped. */
     Provenance: () => {
