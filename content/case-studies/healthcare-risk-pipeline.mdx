@@ -1,0 +1,124 @@
+---
+title: "The risk score that scored nothing"
+subtitle: "Building a compliance review queue, then proving the ordering was better than chance"
+role: "Solo project"
+period: "2026"
+stack: ["Python", "dbt", "PostgreSQL", "scikit-learn", "Power BI"]
+repo: "https://github.com/ManishDhawal/Healthcare_Risk_Compliance_Pipeline"
+summary: "An anomaly detector I built ranked hospital admissions for compliance review. When I finally measured it, the score turned out to be uniform noise. Fixing that took an afternoon and moved average precision from 0.319 to 0.887 — and turned up one failure mode no model can catch."
+---
+
+## The question
+
+I build reporting for regulated environments — federal programmes now, life
+sciences before that. One question keeps coming back and I have never had a
+clean answer to it: when a system hands an analyst a queue of records to review,
+how do you justify the order?
+
+"The model ranked them" does not survive contact with an auditor. Neither does a
+score between nought and one that nobody has checked. I could not publish the
+work where this actually came up, so I rebuilt the problem on open data: could I
+build a compliance review queue over hospital admissions, and then **prove** the
+ordering was better than chance?
+
+## The data, and what was wrong with it
+
+55,500 admissions from a public dataset. Two problems, one small and one that
+changed the project.
+
+The small one was ordinary mess, and the dbt tests now catch it: 108 rows with
+negative billing down to −$2,008, 534 exact duplicate rows, and inconsistent name
+casing across 98% of records.
+
+The large one was mine. I had treated the data as real, and left a comment in the
+loader saying so. It is not — it is generated, and the tell was in the dashboard I
+built on top of it. Billing is flat against every cut: correlation with length of
+stay is **r = −0.006**, the spread across five insurance providers is 0.9%, and
+elective, urgent and emergency admissions cost the same to within $105.
+
+Real hospital billing never looks like that. Emergency costs more than elective;
+longer stays cost more than short ones. Flatness that uniform across every
+dimension is the fingerprint of independently sampled columns.
+
+That constrained what the project could claim, and I would rather state the
+constraint than quietly work around it: **no cross-sectional finding from this
+data is real.** The pipeline is the artefact under review. The numbers about
+healthcare are not findings.
+
+## What I did, and the call I would defend
+
+The first version scored each record with an IsolationForest and rank-normalised
+the output to a tidy nought-to-one "risk score."
+
+That number was uniform by construction. Its mean was 0.49999 and its 95th
+percentile 0.94998 — which is what a uniform distribution looks like, and not
+evidence of anything. It had the shape of a risk score and carried no
+information. There was no way to tell whether a record scoring 0.94 deserved
+review.
+
+So I manufactured ground truth. A module appends copies of real admissions,
+mutated into five failure modes a revenue-integrity review would actually flag —
+a discharge before the admission, a stay past 400 days, a charge 12–30× the
+median for that condition, a large negative charge, a one-day elective stay
+billed like a major episode — at a 1% contamination rate, labelled. The detector
+never sees the labels. It fits on the contaminated data, ranks everything, and
+the ranking is scored afterwards.
+
+**The call I would defend:** this measures whether the detector surfaces the
+failure modes *I thought of*. It says nothing about the ones I did not. That is a
+real limit and it is why I report the per-mode breakdown rather than the headline
+alone — the average hides exactly the case that matters.
+
+## What changed
+
+<StatRow from="headline" />
+
+The benchmark's first job was to score the pipeline as it already stood. It came
+back at average precision 0.319. Two changes took it to 0.887.
+
+<Bars from="configurations" max={1} height={210} />
+
+Neither change was clever. IsolationForest picks its split feature uniformly at
+random, so eleven one-hot indicator columns sitting beside four informative ones
+meant most splits carried no signal. And scikit-learn defaults `max_samples` to
+256 — at a 1% contamination rate that subsample almost never contains an anomaly,
+so moderate outliers sit inside the sampled range and take as long to isolate as
+ordinary records.
+
+The more useful result is what refused to move.
+
+<Bars from="failureModes" max={1} names={{ value: "After", baseline: "Before" }} />
+
+Four failure modes go to 0.99 or above. The fifth — a discharge recorded before
+the admission — sits at 0.604 under every configuration I tried.
+
+The reason is not tuning. **A negative length of stay is invalid, not unusual.** A
+stay of −12 days sits comfortably inside the numeric spread of ordinary stays, so
+a detector that measures distance-from-typical scores it as unremarkable. No
+amount of tuning fixes a model that is answering the wrong question.
+
+It became a dbt test. Rules enforce validity; the model handles what is merely
+strange. Splitting those two is the thing I would carry into the next pipeline.
+
+## What I would do differently
+
+**I would write the benchmark first.** I built a scorer, shipped it, and only
+later discovered its output was noise — weeks of work resting on a number nobody
+had checked, including me. Building the benchmark took an afternoon. Everything
+interesting in this project came out of it.
+
+**I would inject harder anomalies.** Mine are separable enough that four of five
+modes reach 1.000, which flatters the detector more than it deserves. A charge
+sitting just outside a condition's normal band, rather than twelve times its
+median, would be a far more honest test — and I would expect the numbers to drop.
+
+## Evidence
+
+- **[Repository](https://github.com/ManishDhawal/Healthcare_Risk_Compliance_Pipeline)**
+  — full pipeline; runs end to end without a database
+- **README** — architecture, the benchmark design, and its stated limits
+- **`docs/METRICS.md`** — metric dictionary and column-level lineage, including
+  the definitional calls a reviewer would probe
+- **Power BI dashboard** — the visuals, and the flatness that gave the data away
+
+<Provenance />

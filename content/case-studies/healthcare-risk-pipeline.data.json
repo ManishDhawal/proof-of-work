@@ -1,0 +1,77 @@
+{
+  "headline": [
+    {
+      "value": "0.887",
+      "label": "Average precision",
+      "note": "from 0.319"
+    },
+    {
+      "value": "1.000",
+      "label": "Precision @ 100",
+      "note": "101\u00d7 base rate"
+    },
+    {
+      "value": "0.919",
+      "label": "Recall @ 1000",
+      "note": "555 injected anomalies"
+    },
+    {
+      "value": "26",
+      "label": "Tests passing",
+      "note": "was 2"
+    }
+  ],
+  "configurations": [
+    {
+      "label": "As built",
+      "value": 0.319
+    },
+    {
+      "label": "Drop one-hot columns",
+      "value": 0.462
+    },
+    {
+      "label": "Raise max_samples only",
+      "value": 0.612
+    },
+    {
+      "label": "Both changes",
+      "value": 0.887
+    }
+  ],
+  "failureModes": [
+    {
+      "label": "Short stay, high bill",
+      "baseline": 0.982,
+      "value": 1.0
+    },
+    {
+      "label": "Billing outlier",
+      "baseline": 0.82,
+      "value": 1.0
+    },
+    {
+      "label": "Stay beyond 400 days",
+      "baseline": 0.072,
+      "value": 1.0
+    },
+    {
+      "label": "Negative charge",
+      "baseline": 0.0,
+      "value": 0.991
+    },
+    {
+      "label": "Discharge before admission",
+      "baseline": 0.0,
+      "value": 0.604
+    }
+  ],
+  "provenance": {
+    "rows": 55500,
+    "injected": 555,
+    "contaminationRate": 0.01,
+    "seed": 42,
+    "reproduce": "make score",
+    "measuredAt": "2026-09-05"
+  }
+}
