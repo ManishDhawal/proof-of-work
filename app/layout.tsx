@@ -1,11 +1,38 @@
 import type { Metadata } from "next";
 
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Manish Kumar Dhawal — Proof of Work",
-  description:
-    "Data analyst. Reporting and pipelines for regulated environments — federal programmes, healthcare, life sciences.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_NAME,
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: "/" },
+
+  // Without these, the link renders on LinkedIn as a bare URL with no title,
+  // no description and no image — which is most of where this site gets shared.
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Manish Kumar Dhawal — reporting and data pipelines for environments where the numbers get audited.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({

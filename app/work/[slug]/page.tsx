@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { Footer } from "@/components/Footer";
 import { mdxComponents } from "@/components/mdx";
 import { getAllCaseStudies, getCaseStudy } from "@/lib/content";
+import { SITE_NAME } from "@/lib/site";
 
 export function generateStaticParams() {
   return getAllCaseStudies().map((s) => ({ slug: s.slug }));
@@ -19,7 +20,27 @@ export async function generateMetadata({
   const { slug } = await params;
   const study = getCaseStudy(slug);
   if (!study) return {};
-  return { title: `${study.title} — Manish Kumar Dhawal`, description: study.summary };
+
+  const title = `${study.title} — Manish Kumar Dhawal`;
+  return {
+    title,
+    description: study.summary,
+    alternates: { canonical: `/work/${slug}` },
+    openGraph: {
+      type: "article",
+      siteName: SITE_NAME,
+      title,
+      description: study.summary,
+      url: `/work/${slug}`,
+      images: [{ url: "/og.png", width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: study.summary,
+      images: ["/og.png"],
+    },
+  };
 }
 
 export default async function CaseStudyPage({

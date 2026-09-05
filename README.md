@@ -125,6 +125,19 @@ Three of these have behaviour worth knowing about:
 Push to GitHub, import the repo on Vercel, accept the defaults. No environment
 variables. A custom domain is added in the Vercel project settings.
 
+## Share cards and search
+
+`lib/site.ts` holds the canonical URL. When a custom domain is pointed at the
+site, set `NEXT_PUBLIC_SITE_URL` in the Vercel project and canonical links, the
+Open Graph tags, the share image and the sitemap all follow.
+
+`public/og.png` is the card LinkedIn and Slack show when the link is pasted.
+It is a static file rather than a generated one — no runtime cost, no font
+surprises at the edge. Regenerate it if the headline changes.
+
+`app/icon.svg`, `app/robots.ts` and `app/sitemap.ts` cover the favicon,
+crawler rules and the two-page sitemap.
+
 ## Notes
 
 - No email address appears in the markup — it is the one contact detail scrapers
