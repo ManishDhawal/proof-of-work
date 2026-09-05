@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Cell,
   LabelList,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -38,6 +37,19 @@ type Props = {
 };
 
 const fmtDefault = (n: number) => n.toFixed(3);
+
+/**
+ * Recharts 3 hands formatters a loose value type that can be undefined or a
+ * string. Coerce once here rather than casting at each call site, and render
+ * nothing for a missing value instead of "NaN".
+ */
+function looseFormat(format: (n: number) => string) {
+  return (v: unknown): string => {
+    if (v === null || v === undefined || v === "") return "";
+    const n = typeof v === "number" ? v : Number(v);
+    return Number.isFinite(n) ? format(n) : "";
+  };
+}
 
 /**
  * Horizontal bars, one or two series.
@@ -71,14 +83,52 @@ export function Bars({
   }, []);
 
   const c = palette[mode];
+  const fmt = looseFormat(format);
   const grouped = data.some((d) => d.baseline !== undefined);
   const domainMax = max ?? Math.ceil(Math.max(...data.map((d) => d.value)) * 10) / 10;
+  // Recharts 3 picks its own tick stops and would end this axis at 0.900,
+  // which makes 0.887 look like the top of the scale. State them.
+  const ticks = Array.from({ length: 5 }, (_, i) => (domainMax / 4) * i);
   const h = height ?? Math.max(180, data.length * (grouped ? 52 : 38) + 60);
 
   return (
     <div
       style={{ background: c.surface, padding: "14px 12px 6px", borderRadius: 2 }}
     >
+      {grouped && names && (
+        <div
+          style={{
+            display: "flex",
+            gap: 18,
+            padding: "2px 0 10px 10px",
+            fontFamily: font,
+            fontSize: 12,
+            color: c.inkSecondary,
+          }}
+        >
+          {[
+            { label: names.baseline, fill: c.baseline },
+            { label: names.value, fill: c.series },
+          ].map((s) => (
+            <span
+              key={s.label}
+              style={{ display: "inline-flex", alignItems: "center", gap: 7 }}
+            >
+              <span
+                aria-hidden="true"
+                style={{
+                  width: 10,
+                  height: 10,
+                  background: s.fill,
+                  borderRadius: 1,
+                  flex: "0 0 auto",
+                }}
+              />
+              {s.label}
+            </span>
+          ))}
+        </div>
+      )}
       <ResponsiveContainer width="100%" height={h}>
         <BarChart
           data={data}
@@ -95,8 +145,9 @@ export function Bars({
           <XAxis
             type="number"
             domain={[0, domainMax]}
+            ticks={ticks}
             tick={{ fill: c.inkMuted, fontSize: 11, fontFamily: font }}
-            tickFormatter={format}
+            tickFormatter={fmt}
             axisLine={{ stroke: c.axis }}
             tickLine={false}
           />
@@ -119,33 +170,21 @@ export function Bars({
               color: c.inkPrimary,
             }}
             labelStyle={{ color: c.inkPrimary, fontWeight: 600 }}
-            formatter={(v: number) => format(v)}
+            formatter={fmt}
           />
-          {grouped && names && (
-            <Legend
-              verticalAlign="top"
-              align="left"
-              height={28}
-              wrapperStyle={{
-                fontFamily: font,
-                fontSize: 12,
-                color: c.inkSecondary,
-              }}
-            />
-          )}
-
           {grouped && (
             <Bar
               dataKey="baseline"
               name={names?.baseline ?? "Before"}
               fill={c.baseline}
+              minPointSize={2}
               radius={[0, 3, 3, 0]}
               isAnimationActive={false}
             >
               <LabelList
                 dataKey="baseline"
                 position="right"
-                formatter={format}
+                formatter={fmt}
                 style={{ fill: c.inkMuted, fontSize: 11, fontFamily: font }}
               />
             </Bar>
@@ -164,7 +203,7 @@ export function Bars({
             <LabelList
               dataKey="value"
               position="right"
-              formatter={format}
+              formatter={fmt}
               style={{
                 fill: c.inkSecondary,
                 fontSize: 11,

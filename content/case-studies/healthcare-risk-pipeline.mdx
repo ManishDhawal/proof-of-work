@@ -76,7 +76,7 @@ alone — the average hides exactly the case that matters.
 The benchmark's first job was to score the pipeline as it already stood. It came
 back at average precision 0.319. Two changes took it to 0.887.
 
-<Bars from="configurations" max={1} height={210} />
+<Bars from="configurations" />
 
 Neither change was clever. IsolationForest picks its split feature uniformly at
 random, so eleven one-hot indicator columns sitting beside four informative ones
@@ -87,7 +87,7 @@ ordinary records.
 
 The more useful result is what refused to move.
 
-<Bars from="failureModes" max={1} names={{ value: "After", baseline: "Before" }} />
+<Bars from="failureModes" />
 
 Four failure modes go to 0.99 or above. The fifth — a discharge recorded before
 the admission — sits at 0.604 under every configuration I tried.

@@ -36,18 +36,38 @@ summary: "..."       # shown on the home page and as the page description
 
 ### Charts
 
-MDX cannot import anything here — `next-mdx-remote` resolves neither imports nor
-a `scope` prop in its RSC build. Components are injected in `components/mdx.tsx`
-instead, and each one names a key from the sibling JSON:
+A case study never writes JavaScript. Each chart names a block in its sibling
+JSON and takes nothing else:
 
 ```mdx
 <StatRow from="headline" />
-<Bars from="failureModes" max={1} names={{ value: "After", baseline: "Before" }} />
+<Bars from="failureModes" />
 <Provenance />
 ```
 
-Naming a key that is not in the JSON throws at build time with the available
-keys listed, rather than rendering an empty chart.
+Everything the chart needs lives in that block:
+
+```json
+"failureModes": {
+  "max": 1,
+  "names": { "value": "After", "baseline": "Before" },
+  "rows": [
+    { "label": "Billing outlier", "baseline": 0.82, "value": 1.0 }
+  ]
+}
+```
+
+`rows` may also be a bare array when a chart needs no configuration. Naming a
+key that is not in the JSON throws at build time with the available keys listed,
+rather than rendering an empty chart.
+
+**Why one prop.** `next-mdx-remote` 6 — the release that patches the RSC
+code-execution advisory
+([GHSA-g4xw-jxrg-5f6m](https://github.com/advisories/GHSA-g4xw-jxrg-5f6m)) —
+passes **string attributes only.** Expression attributes such as `max={1}` are
+stripped before the component sees them, and stripped *silently*: the chart
+renders with defaults and nothing warns you. Imports and a `scope` prop are not
+supported either. Keeping configuration in the JSON sidesteps all of it.
 
 ## The chart set
 
@@ -82,6 +102,23 @@ content/case-studies/   the actual writing
 lib/content.ts          frontmatter parsing and the planned-work list
 public/                 résumé PDF goes here
 ```
+
+## Dependencies
+
+Pinned with carets so security patches arrive without a manual bump. `npm audit`
+should stay at zero; if it does not, fix it before deploying.
+
+Three of these have behaviour worth knowing about:
+
+- **Recharts 3** removed the `<Legend>` render this site was using, so `Bars`
+  draws its own legend from the same tokens. Its formatters also receive a loose
+  value type now, coerced once in `looseFormat`.
+- **Recharts 3** draws nothing for a zero-value bar, which silently dropped the
+  "0.000" labels that carry real meaning here. `minPointSize={2}` restores a
+  visible stub.
+- **Recharts 3** picks its own axis tick stops and ignored the domain maximum,
+  ending an axis at 0.900 and making 0.887 look like full scale. `Bars` states
+  its ticks explicitly.
 
 ## Deploying
 
