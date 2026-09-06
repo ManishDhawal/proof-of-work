@@ -58,12 +58,5 @@ export function getCaseStudy(slug: string): CaseStudy | null {
   return { slug, body: content, data, ...(fm as Omit<CaseStudyMeta, "slug">) };
 }
 
-/** Projects not yet written up. Shown so the shape of the work is visible. */
-export const PLANNED = [
-  {
-    title: "Chest X-ray classification: diagnosing the skew",
-    blurb:
-      "A team capstone across 112,120 scans with a 266-to-1 class imbalance. My half was the data evaluation and the augmentation strategy built to attack it — and why the rare classes stayed out of reach.",
-    stack: ["PyTorch", "NumPy", "OpenCV"],
-  },
-];
+/** Projects not yet written up. Empty once every planned case study has shipped. */
+export const PLANNED: { title: string; blurb: string; stack: string[] }[] = [];

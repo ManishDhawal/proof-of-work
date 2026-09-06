@@ -1,0 +1,57 @@
+{
+  "headline": [
+    { "value": "112,120", "label": "Chest scans", "note": "NIH ChestX-ray14" },
+    { "value": "266:1", "label": "Majority to rarest class", "note": "60,361 vs 227" },
+    { "value": "1.000", "label": "Recall on the rarest classes", "note": "and it is the problem" },
+    { "value": "0.001", "label": "Precision on those same classes", "note": "Hernia, final epoch" }
+  ],
+
+  "distribution": {
+    "format": "integer",
+    "height": 620,
+    "max": 62000,
+    "rows": [
+      { "label": "No Finding", "value": 60361 },
+      { "label": "Infiltration", "value": 19894 },
+      { "label": "Effusion", "value": 13317 },
+      { "label": "Atelectasis", "value": 11559 },
+      { "label": "Nodule", "value": 6331 },
+      { "label": "Mass", "value": 5782 },
+      { "label": "Pneumothorax", "value": 5302 },
+      { "label": "Consolidation", "value": 4667 },
+      { "label": "Pleural Thickening", "value": 3385 },
+      { "label": "Cardiomegaly", "value": 2776 },
+      { "label": "Emphysema", "value": 2516 },
+      { "label": "Edema", "value": 2303 },
+      { "label": "Fibrosis", "value": 1686 },
+      { "label": "Pneumonia", "value": 1431 },
+      { "label": "Hernia", "value": 227 }
+    ]
+  },
+
+  "precisionVsRecall": {
+    "max": 1,
+    "height": 700,
+    "names": { "value": "Precision", "baseline": "Recall" },
+    "rows": [
+      { "label": "Infiltration", "baseline": 0.5447, "value": 0.2373 },
+      { "label": "Effusion", "baseline": 0.9688, "value": 0.1537 },
+      { "label": "Atelectasis", "baseline": 0.9932, "value": 0.1096 },
+      { "label": "Nodule", "baseline": 0.9787, "value": 0.0665 },
+      { "label": "Mass", "baseline": 1.0, "value": 0.0495 },
+      { "label": "Pneumothorax", "baseline": 1.0, "value": 0.0467 },
+      { "label": "Consolidation", "baseline": 1.0, "value": 0.0455 },
+      { "label": "Cardiomegaly", "baseline": 1.0, "value": 0.0292 },
+      { "label": "Emphysema", "baseline": 1.0, "value": 0.024 },
+      { "label": "Edema", "baseline": 1.0, "value": 0.0172 },
+      { "label": "Pneumonia", "baseline": 1.0, "value": 0.0098 },
+      { "label": "Hernia", "baseline": 1.0, "value": 0.0014 }
+    ]
+  },
+
+  "provenance": {
+    "rows": 112120,
+    "reproduce": "capstone_trials.ipynb, epoch 10 of 10",
+    "seed": 42
+  }
+}

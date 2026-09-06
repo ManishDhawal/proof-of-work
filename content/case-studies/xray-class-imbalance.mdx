@@ -1,0 +1,139 @@
+---
+title: "Perfect recall, and why that was the bad news"
+subtitle: "A 266-to-1 class imbalance across 112,120 chest X-rays, and an over-correction that hid inside a good-looking metric"
+role: "Team capstone — I owned data evaluation and feature engineering"
+period: "2024"
+stack: ["PyTorch", "NumPy", "OpenCV", "DenseNet"]
+summary: "Our multi-label chest X-ray classifier reported recall of 1.000 on almost every rare condition. It was not working. It had learned to answer yes to everything, and the metric we were watching could not tell the difference."
+---
+
+## The question
+
+This was a team capstone: a dual-head DenseNet doing bone-fracture detection and
+15-class chest pathology from the same backbone. I owned the data side — the
+evaluation, the feature engineering, and the question of whether the training set
+was fit to learn from in the first place.
+
+That question turned out to be the whole project. The fracture half worked almost
+immediately. The chest half never did, and the reason was in the label
+distribution rather than the architecture.
+
+## The data, and what was wrong with it
+
+112,120 scans from NIH ChestX-ray14, multi-label, with 801 distinct label
+combinations. The distribution is not skewed so much as it is two different
+datasets stacked on top of each other.
+
+<Bars from="distribution" />
+
+More than half of every batch is "No Finding". Hernia has 227 examples in the
+entire corpus — a 266-to-1 ratio against the majority, and 0.20% of the data. On
+a random 70/15/15 split that leaves roughly 34 Hernia scans in validation.
+
+There is a second problem underneath that one, and it is the more serious of the
+two. **The labels are not ground truth.** ChestX-ray14's labels were mined from
+free-text radiology reports with NLP, and the dataset's own documentation puts
+that extraction well short of perfect. So the rarest classes are simultaneously
+the least represented and the most likely to be mislabelled. Anything the model
+learns about Hernia, it learns from a couple of hundred examples that may not all
+be Hernia.
+
+## What I did, and the call I would defend
+
+We attacked the imbalance in three places at once, none of them the loss function
+alone:
+
+- **Batch composition.** A generator built every batch as 50% fracture and 50%
+  chest data, and down-weighted "No Finding" sampling within the chest half. The
+  model never saw the raw 54% majority.
+- **Split logic.** Stratified on the fracture label, and separated "No Finding"
+  from findings when splitting the chest set, so validation could not drift to a
+  different mix than training.
+- **Focal loss** (α = 0.25, γ = 2.0) on both heads, so easy negatives stopped
+  dominating the gradient.
+- **Per-class decision thresholds**, tuned down as class frequency fell — 0.50
+  for "No Finding", 0.05 for Hernia.
+
+We also wrote an augmentation utility — 90° rotation, horizontal and vertical
+flips, a 1.5× contrast multiply, a 5×5 Gaussian blur — meant to widen the rare
+classes by simulating scanner variation.
+
+**The call I would defend is that none of this was unreasonable, and I would
+still reach for most of it.** Batch-level rebalancing is a better instrument than
+synthetic duplication when the minority class has 227 real examples, because
+copies of 227 images do not contain more information about Hernia than the 227
+originals do. The thing I would defend less is the fourth item, and the reason is
+the next section.
+
+## What changed
+
+The model reported recall of 1.000 on nine of fifteen conditions. On a problem
+this imbalanced that should have been the first thing we distrusted, and it was
+not.
+
+<Bars from="precisionVsRecall" />
+
+<StatRow from="headline" />
+
+Recall near 1.0 with precision near 0.02 is not a model that has learned a rare
+condition. It is a model answering **yes** to nearly every scan for that class.
+Perfect recall is trivially achievable by predicting everything positive; it only
+means something alongside the precision it cost.
+
+The mirror image confirms it. "No Finding" — the majority class, 53.8% of the
+data — finished with **recall 0.0015 and precision 1.0000**. The model had almost
+entirely stopped predicting the most common label in the dataset, and was right
+the handful of times it did.
+
+Put those two facts together and the diagnosis is not "the rare classes are hard".
+It is that **we over-corrected.** Down-weighted majority sampling, plus focal
+loss, plus thresholds that fell to 0.05 for the rarest classes — three
+interventions all pushing the same direction, compounding into a classifier whose
+answer was "abnormal" regardless of input. Best F1 across all fifteen conditions
+was 0.331, on Infiltration. Most sat below 0.10.
+
+And the augmentation utility, which was the one intervention that might have
+pushed the other way? **As far as the committed code shows, it was written and
+never wired into the training loop.** It is defined in the preprocessing module
+and called nowhere in it, nor in the model or application code. The project plan
+lists augmentation as done. The code does not support that.
+
+For contrast, the fracture head — 4,606 versus 4,640 examples, essentially
+balanced, single-label — reached validation AUC 0.9982 and F1 0.9775 without any
+of this machinery. Same backbone, same training loop, same week. The difference
+was never the model.
+
+## What I would do differently
+
+**Watch precision-recall, not recall.** One metric moving toward 1.0 while its
+partner collapses is a signature, and we had the numbers on screen for ten epochs
+without reading them that way. Average precision per class would have made the
+degeneracy obvious in epoch two.
+
+**Change one thing at a time.** Sampling weights, focal loss, and per-class
+thresholds were introduced together, so when the model tipped into
+predict-everything there was no way to attribute it. Any one of them alone is
+defensible; the interaction is what broke it.
+
+**Verify the intervention actually runs.** Writing `augment_array` and assuming
+it was in the pipeline is a failure of exactly the kind this project was supposed
+to catch. A single assertion on batch size, or one saved sample image, would have
+shown it.
+
+**And I would question the labels before the architecture.** With 227 examples of
+uncertain provenance, no amount of sampling strategy makes Hernia learnable.
+The honest recommendation was to drop the rarest classes, or reframe the task as
+detecting the eight conditions with enough clean support — not to keep tuning
+against labels that could not carry the weight.
+
+## Evidence
+
+- Dual-head DenseNet (growth rate 12, blocks 6/12/24/16), CLAHE preprocessing at
+  clip 2.0 with 8×8 tiles, images standardised to 224×224
+- Per-class precision, recall and F1 across ten epochs, from the training
+  notebook's own outputs — every figure on this page is read from that run
+- **A note on scope:** this was a team project and the repository lived on a
+  teammate's machine, so the commit history is theirs. My contribution was the
+  data evaluation, the feature engineering, and the analysis on this page.
+
+<Provenance />
