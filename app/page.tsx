@@ -23,6 +23,7 @@ export default function Home() {
         <div className="meta-row">
           <span>Worcester, MA</span>
           <span>M.S. Data Analytics, Clark University</span>
+          <Link href="/about">About me →</Link>
         </div>
       </header>
 
