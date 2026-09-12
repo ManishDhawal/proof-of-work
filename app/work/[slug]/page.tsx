@@ -4,6 +4,8 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import type { Metadata } from "next";
 
 import { Footer } from "@/components/Footer";
+import { ReadingProgress } from "@/components/ReadingProgress";
+import { SiteHeader } from "@/components/SiteHeader";
 import { mdxComponents } from "@/components/mdx";
 import { getAllCaseStudies, getCaseStudy } from "@/lib/content";
 import { SITE_NAME } from "@/lib/site";
@@ -54,17 +56,20 @@ export default async function CaseStudyPage({
 
   return (
     <main className="page">
+      <ReadingProgress />
+      <SiteHeader current="Work" />
+
       <Link href="/" className="backlink">
-        ← All work
+        <span className="go" aria-hidden="true">←</span> All work
       </Link>
 
-      <header className="cs-header">
+      <header className="cs-header rise rise-1">
         <span className="eyebrow">{study.subtitle}</span>
         <h1>{study.title}</h1>
         <p className="cs-summary">{study.summary}</p>
       </header>
 
-      <dl className="factbox">
+      <dl className="factbox rise rise-2">
         <div>
           <dt>Role</dt>
           <dd>{study.role}</dd>
@@ -87,7 +92,7 @@ export default async function CaseStudyPage({
         )}
       </dl>
 
-      <article className="prose">
+      <article className="prose rise rise-3">
         <MDXRemote
           source={study.body}
           components={mdxComponents(study.data)}

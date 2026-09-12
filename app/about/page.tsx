@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { Footer } from "@/components/Footer";
+import { SiteHeader } from "@/components/SiteHeader";
 import { SITE_NAME } from "@/lib/site";
 
 const TITLE = "About — Manish Kumar Dhawal";
@@ -68,14 +69,16 @@ const EDUCATION = [
 export default function About() {
   return (
     <main className="page">
+      <SiteHeader current="About" />
+
       <Link href="/" className="backlink">
-        ← All work
+        <span className="go" aria-hidden="true">←</span> All work
       </Link>
 
       <header className="masthead">
-        <div className="name">About</div>
-        <h1>I build numbers that somebody else has to defend.</h1>
-        <p className="lede">
+        <div className="name rise rise-1">About</div>
+        <h1 className="rise rise-2">I build numbers that somebody else has to defend.</h1>
+        <p className="lede rise rise-3">
           Four years of reporting work, and the constant across all of it is
           that I am not the one in the room when the number gets questioned. A
           federal auditor asks where a figure came from. A compliance officer
@@ -85,7 +88,7 @@ export default function About() {
         </p>
       </header>
 
-      <section className="about-section measure">
+      <section className="about-section measure rise rise-4">
         <p>
           It is why I care more about metric definitions and lineage records
           than most people think is reasonable, and why the three projects on

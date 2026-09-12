@@ -85,6 +85,11 @@ export function Bars({
   }, []);
 
   const c = palette[mode];
+  // A bar that grows is showing its value against the axis. A bar that grows
+  // for someone who asked for less motion is just motion.
+  const animate =
+    typeof window === "undefined" ||
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const fmt = looseFormat(FORMATS[format] ?? FORMATS.decimal3);
   const grouped = data.some((d) => d.baseline !== undefined);
   const domainMax = max ?? Math.ceil(Math.max(...data.map((d) => d.value)) * 10) / 10;
@@ -181,7 +186,9 @@ export function Bars({
               fill={c.baseline}
               minPointSize={2}
               radius={[0, 3, 3, 0]}
-              isAnimationActive={false}
+              isAnimationActive={animate}
+              animationDuration={620}
+              animationEasing="ease-out"
             >
               <LabelList
                 dataKey="baseline"
@@ -197,7 +204,10 @@ export function Bars({
             name={names?.value ?? "Value"}
             fill={c.series}
             radius={[0, 3, 3, 0]}
-            isAnimationActive={false}
+            isAnimationActive={animate}
+            animationBegin={140}
+            animationDuration={620}
+            animationEasing="ease-out"
           >
             {data.map((_, i) => (
               <Cell key={i} fill={c.series} />
