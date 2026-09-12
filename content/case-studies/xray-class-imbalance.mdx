@@ -3,6 +3,9 @@ title: "Perfect recall, and why that was the bad news"
 subtitle: "A 266-to-1 class imbalance across 112,120 chest X-rays, and an over-correction that hid inside a good-looking metric"
 role: "Team capstone — I owned data evaluation and feature engineering"
 period: "2024"
+provenance: "Graduate team capstone"
+result: "Recall 1.000 at precision 0.001 · 266:1 class imbalance"
+mirrors: "A graduate team project, not a stand-in for client work. My share was the data evaluation and the feature engineering — the imbalance analysis and the augmentation strategy below. The model architecture and the training loop were owned by other members of the team."
 stack: ["PyTorch", "NumPy", "OpenCV", "DenseNet"]
 summary: "Our multi-label chest X-ray classifier reported recall of 1.000 on almost every rare condition. It was not working. It had learned to answer yes to everything, and the metric we were watching could not tell the difference."
 ---

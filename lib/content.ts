@@ -14,6 +14,14 @@ export type CaseStudyMeta = {
   stack: string[];
   repo?: string;
   summary: string;
+  /** Classification mark on the index: what kind of work this is. */
+  provenance: string;
+  /** The headline finding, pulled onto the index so the row is readable
+      without opening the case study. Mono, so keep it short and numeric. */
+  result: string;
+  /** One paragraph on why a self-built project stands in for client work —
+      or, for the capstone, what was and was not mine. */
+  mirrors: string;
 };
 
 export type CaseStudy = CaseStudyMeta & {

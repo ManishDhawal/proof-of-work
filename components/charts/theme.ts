@@ -1,9 +1,11 @@
 /**
  * Chart tokens. One place, so every case study looks like one system.
  *
- * Colours come from a palette validated for colour-vision deficiency in both
- * light and dark mode: worst-pair separation ΔE 15.9 (protan) and 17.8 (normal
- * vision), both comfortably above the floors, contrast ≥ 3:1 on each surface.
+ * Colours are drawn from the page palette — cool neutrals, a navy-family series
+ * — and re-validated for colour-vision deficiency after the move: series against
+ * baseline separates by ΔE 39.3 (protan) / 44.2 (deutan) in light mode and 26.9
+ * / 30.8 in dark, and every mark clears 3:1 against its own surface (light
+ * series 6.81, baseline 3.85; dark series 6.88, baseline 5.38).
  *
  * `baseline` is deliberately desaturated — it marks a "before" or reference
  * series and is meant to recede. Because it reads as grey rather than as a
@@ -15,29 +17,31 @@ export type Mode = "light" | "dark";
 
 export const palette = {
   light: {
-    surface: "#fcfcfb",
-    inkPrimary: "#0b0b0b",
-    inkSecondary: "#52514e",
-    inkMuted: "#898781",
-    grid: "#e1e0d9",
-    axis: "#c3c2b7",
-    series: "#2a78d6",
-    baseline: "#898781",
+    surface: "#ffffff",
+    inkPrimary: "#0d1117",
+    inkSecondary: "#384049",
+    inkMuted: "#69727d",
+    grid: "#e6e9ee",
+    axis: "#c2c9d1",
+    series: "#1f5c9e",
+    baseline: "#7a838d",
   },
   dark: {
-    surface: "#1a1a19",
-    inkPrimary: "#ffffff",
-    inkSecondary: "#c3c2b7",
-    inkMuted: "#898781",
-    grid: "#2c2c2a",
-    axis: "#383835",
-    series: "#3987e5",
-    baseline: "#898781",
+    surface: "#14181d",
+    inkPrimary: "#eef1f5",
+    inkSecondary: "#c0c8d2",
+    inkMuted: "#8891a0",
+    grid: "#262c34",
+    axis: "#343c47",
+    series: "#6aa6dd",
+    baseline: "#858e9b",
   },
 } as const;
 
+/* Charts inherit the page face rather than system-ui, so a figure reads as part
+   of the document instead of a screenshot pasted into it. */
 export const font =
-  'system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif';
+  '"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif';
 
 /** Resolves the viewer's theme: OS preference, plus an explicit data-theme stamp. */
 export function resolveChartMode(): Mode {

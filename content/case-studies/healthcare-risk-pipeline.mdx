@@ -3,8 +3,11 @@ title: "The risk score that scored nothing"
 subtitle: "Building a compliance review queue, then proving the ordering was better than chance"
 role: "Solo project"
 period: "2026"
+provenance: "Client work, rebuilt in public"
+result: "Average precision 0.319 → 0.887 · P@100 = 1.000"
+mirrors: "The compliance pipelines I build for healthcare and federal clients do not leave the client. This is the same problem rebuilt on generated data — a review queue that has to be ranked, validated against explicit rules, and defended when somebody asks why a case is near the top."
 stack: ["Python", "dbt", "PostgreSQL", "scikit-learn", "Power BI"]
-repo: "https://github.com/ManishDhawal/Healthcare_Risk_Compliance_Pipeline_"
+repo: "https://github.com/ManishDhawal/Healthcare_Risk_Compliance_Pipeline"
 summary: "An anomaly detector I built ranked hospital admissions for compliance review. When I finally measured it, the score turned out to be uniform noise. Fixing that took an afternoon and moved average precision from 0.319 to 0.887 — and turned up one failure mode no model can catch."
 ---
 

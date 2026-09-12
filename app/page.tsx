@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Footer } from "@/components/Footer";
+import { Method } from "@/components/Method";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getAllCaseStudies } from "@/lib/content";
 
@@ -30,7 +31,9 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="work rise rise-4">
+      <Method />
+
+      <section className="work rise rise-6">
         <div className="work-head">
           <span className="eyebrow">Selected work</span>
           <span className="spacer" />
@@ -39,16 +42,28 @@ export default function Home() {
           </span>
         </div>
 
+        {/* Said once, here, rather than as a defensive footnote on each entry.
+            A reader who wonders why the projects are self-built hits the answer
+            before the first one. */}
+        <p className="note">
+          Client work in federal programmes, healthcare and life sciences does
+          not leave the client. Two of the three projects below rebuild that
+          work in public — same problem, same failure modes, generated or open
+          data — so the method can be read end to end instead of taken on trust.
+        </p>
+
         {studies.map((s, i) => (
           <article key={s.slug} className="entry">
             {/* The index column is a record reference, not decoration: it
                 carries the entry number and the year the work was done. */}
             <div className="entry-index">
-              <span>{String(i + 1).padStart(2, "0")}</span>
+              <span className="no">{String(i + 1).padStart(2, "0")}</span>
               <span className="yr">{s.period}</span>
             </div>
 
             <div className="entry-body">
+              <span className="prov">{s.provenance}</span>
+
               <div className="entry-title">
                 <h2>
                   <Link href={`/work/${s.slug}`}>{s.title}</Link>
@@ -57,7 +72,17 @@ export default function Home() {
                   →
                 </span>
               </div>
+
               <p>{s.summary}</p>
+
+              {/* The finding, on the index. The whole reason this site is not
+                  a true one-pager is that the evidence lives a click away —
+                  this is the part of the evidence that survives the skim. */}
+              <div className="entry-result">
+                <span className="rk">Result</span>
+                <span>{s.result}</span>
+              </div>
+
               <div className="stack">
                 {s.stack.map((t) => (
                   <span key={t}>{t}</span>

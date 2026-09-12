@@ -20,17 +20,38 @@
 :root {
   /* Neutrals carry a slight cool cast so the accent sits in the same family
      rather than reading as a foreign colour dropped on grey. */
-  --ground: #f6f7f9;
+  --ground: #f5f6f8;
   --surface: #ffffff;
-  --surface-2: #eef1f4;
-  --ink: #0e1014;
-  --ink-2: #39414b;
-  --muted: #6b747f;
-  --faint: #9aa3ad;
-  --rule: #e0e4e9;
-  --rule-strong: #c4cbd3;
-  --accent: #1b3a5c;
-  --accent-soft: #e7edf4;
+  --surface-2: #ebeef2;
+  --ink: #0d1117;
+  --ink-2: #384049;
+  --muted: #69727d;
+  /* 3.11:1 on --ground. The old value was 2.4 and failed the non-text minimum,
+     which mattered more once --faint started labelling the result lines rather
+     than only numbering figures. */
+  --faint: #848d97;
+  --rule: #dfe3e8;
+  --rule-strong: #c2c9d1;
+  --accent: #12304f;
+  --accent-soft: #e6ecf3;
+
+  /* The second voice: brass. Navy is the institution, brass is the annotation
+     — the stamp, the index number, the mark somebody made in the margin. It is
+     used in small doses only; the moment it fills an area it stops reading as
+     a mark and starts reading as a brand colour. */
+  --mark: #7d5a1c;
+
+  /* Reversed ground for the one band on the page. A dark inset is how a report
+     separates its method statement from its findings, and it is the only place
+     the palette runs at full strength — navy ground, brass marks. It is a
+     complete second theme, so every band token is defined here and overridden
+     in the dark blocks; nothing inherits through. */
+  --band: #10263e;
+  --band-2: #17334f;
+  --band-ink: #eef2f7;
+  --band-ink-2: #a9bbcd;
+  --band-mark: #d3ab68;
+  --band-rule: rgba(255, 255, 255, 0.14);
 
   /* Depth is two hairline-adjacent shadows, not a drop shadow. Enough to lift
      a figure off the page; never enough to read as a card. */
@@ -58,8 +79,17 @@
     --faint: #626c7a;
     --rule: #232931;
     --rule-strong: #343c47;
-    --accent: #7cb0e0;
+    --accent: #86b6e4;
     --accent-soft: #16232f;
+    --mark: #cfa965;
+    /* On a near-black ground the band cannot be darker than the page, so it
+       inverts its job and sits slightly above it — same navy cast, one step up. */
+    --band: #0f1a27;
+    --band-2: #17263a;
+    --band-ink: #e9eef4;
+    --band-ink-2: #9aa8b8;
+    --band-mark: #c9a25c;
+    --band-rule: rgba(255, 255, 255, 0.10);
     --lift: 0 1px 1px rgba(0, 0, 0, 0.30), 0 6px 16px -8px rgba(0, 0, 0, 0.55);
     --lift-hi: 0 1px 1px rgba(0, 0, 0, 0.35), 0 10px 24px -10px rgba(0, 0, 0, 0.65);
   }
@@ -75,8 +105,15 @@
   --faint: #626c7a;
   --rule: #232931;
   --rule-strong: #343c47;
-  --accent: #7cb0e0;
+  --accent: #86b6e4;
   --accent-soft: #16232f;
+  --mark: #cfa965;
+  --band: #0f1a27;
+  --band-2: #17263a;
+  --band-ink: #e9eef4;
+  --band-ink-2: #9aa8b8;
+  --band-mark: #c9a25c;
+  --band-rule: rgba(255, 255, 255, 0.10);
   --lift: 0 1px 1px rgba(0, 0, 0, 0.30), 0 6px 16px -8px rgba(0, 0, 0, 0.55);
   --lift-hi: 0 1px 1px rgba(0, 0, 0, 0.35), 0 10px 24px -10px rgba(0, 0, 0, 0.65);
 }
@@ -93,6 +130,12 @@ body {
   line-height: 1.62;
   -webkit-font-smoothing: antialiased;
   transition: background 200ms var(--ease), color 200ms var(--ease);
+
+  /* The band breaks out of the page column with a negative 50vw margin, and
+     100vw counts the scrollbar — so on any platform with a classic scrollbar
+     that is ~15px of horizontal scroll. `clip` removes it without creating a
+     scroll container, which `hidden` would (and which breaks sticky children). */
+  overflow-x: clip;
 }
 
 .page { max-width: var(--page); margin: 0 auto; padding: 28px 28px 112px; }
@@ -129,7 +172,15 @@ a:focus-visible, button:focus-visible {
   border-radius: 2px;
 }
 
-strong { font-weight: 600; }
+/*
+ * Emphasis is a tonal step, not a weight jump.
+ *
+ * The tool names in the method band are the keywords a recruiter scans for, so
+ * they have to be findable — but 600 on a 500-weight serif page reads as
+ * shouting. 500 plus a step from --ink-2 up to --ink does the same job: the eye
+ * catches them on a skim and the sentence still reads as a sentence.
+ */
+strong { font-weight: 500; color: var(--ink); }
 em { font-style: italic; }
 
 code {
@@ -217,6 +268,100 @@ li { margin-bottom: 7px; }
 .meta-row a { text-decoration: none; }
 .meta-row a:hover { text-decoration: underline; }
 
+/* ---------- method band: the one reversed surface on the site ---------- */
+
+/*
+ * A dark inset is how a report separates its method statement from its
+ * findings. It is doing two jobs here: it gives the page a second tonal level
+ * so the index below it reads as a distinct movement rather than more of the
+ * same, and it is the one place the palette runs at full strength.
+ */
+.band {
+  margin-top: 84px;
+  /* Break out of the page column to the full viewport, then push the content
+     back to where the column was — full-bleed ground, same left edge as every
+     other line on the page. */
+  margin-inline: calc(50% - 50vw);
+  padding-inline: calc(50vw - 50%);
+  padding-block: 56px 62px;
+  background: var(--band);
+  color: var(--band-ink);
+  border-block: 1px solid var(--band-rule);
+}
+
+.band .eyebrow { color: var(--band-mark); }
+
+.band-lede {
+  font-size: 18px;
+  line-height: 1.52;
+  color: var(--band-ink-2);
+  max-width: 56ch;
+  margin: 15px 0 46px;
+}
+
+/* auto-fit rather than a breakpoint: the columns collapse when they run out of
+   measure, which is the actual constraint, not an arbitrary device width. */
+.caps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(238px, 1fr));
+  gap: 38px 36px;
+}
+
+.cap {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  border-top: 1px solid var(--band-rule);
+  padding-top: 17px;
+}
+
+.cap-no {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--band-mark);
+  font-variant-numeric: tabular-nums;
+}
+
+.cap h2 { font-size: 25px; color: var(--band-ink); letter-spacing: -0.01em; }
+.cap p { font-size: 15px; line-height: 1.62; color: var(--band-ink-2); margin: 0; }
+
+/* Same rule as the light page — a tonal step, not a weight jump. */
+.cap strong { color: var(--band-ink); font-weight: 500; }
+
+/* ---------- provenance ---------- */
+
+/*
+ * Two of the three projects are self-built, because the client work they stand
+ * in for cannot be published. Saying that once, plainly, in the reader's path
+ * is worth more than three defensive footnotes — so the note carries the
+ * explanation and the per-entry label is just a classification mark.
+ */
+.note,
+.mirrors {
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.62;
+  color: var(--muted);
+  border-left: 2px solid var(--mark);
+  padding-left: 16px;
+}
+.note { margin: 24px 0 4px; }
+.mirrors { margin: 28px 0 0; }
+.mirrors strong { color: var(--ink-2); }
+
+/* Above the case-study subtitle the two mono lines want to read as one block,
+   not as two competing eyebrows. */
+.cs-header .prov { margin-bottom: -9px; }
+
+.prov {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--mark);
+}
+
 /* ---------- section heads ---------- */
 
 .work { margin-top: 76px; display: flex; flex-direction: column; }
@@ -268,7 +413,33 @@ li { margin-bottom: 7px; }
   gap: 4px;
   font-variant-numeric: tabular-nums;
 }
+/* The entry number is the brass mark — it is what makes the index read as an
+   index rather than a stack of teasers. */
+.entry-index .no { color: var(--mark); }
 .entry-index .yr { color: var(--muted); }
+
+/*
+ * The result line is the whole point of #7: a recruiter skimming the index
+ * should get the finding without opening the case study. Mono and tabular so
+ * the three of them line up as a column of numbers down the page.
+ */
+.entry-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 11px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  margin-top: 3px;
+}
+.entry-result .rk {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
 
 .entry-body { display: flex; flex-direction: column; gap: 9px; max-width: 62ch; }
 
@@ -514,6 +685,9 @@ footer .spacer { flex: 1; }
 .rise-2 { animation-delay: 90ms; }
 .rise-3 { animation-delay: 140ms; }
 .rise-4 { animation-delay: 190ms; }
+.rise-5 { animation-delay: 240ms; }
+.rise-6 { animation-delay: 290ms; }
+.rise-7 { animation-delay: 340ms; }
 
 @media (max-width: 640px) {
   .page { padding: 20px 20px 80px; }
@@ -522,6 +696,19 @@ footer .spacer { flex: 1; }
   .entry-index { flex-direction: row; gap: 12px; padding-top: 0; }
   .cv-when { flex-direction: row; gap: 14px; padding-top: 0; }
   h1 { font-size: clamp(30px, 8vw, 38px); }
+
+  /* The band's own padding-inline is derived from the page column, so it
+     follows the narrower gutter automatically — only the vertical rhythm and
+     the heading size need adjusting. */
+  .band { margin-top: 58px; padding-block: 42px 46px; }
+  .band-lede { font-size: 16.5px; margin-bottom: 34px; }
+  .caps { gap: 30px; }
+  .cap h2 { font-size: 22px; }
+
+  /* The arrow is a hover affordance and there is no hover here — but it still
+     takes a flex slot, and once the title wraps it lands on a line of its own
+     and opens a hole under every multi-line entry. */
+  .entry-title .go { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

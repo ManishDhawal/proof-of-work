@@ -64,9 +64,17 @@ export default async function CaseStudyPage({
       </Link>
 
       <header className="cs-header rise rise-1">
+        <span className="prov">{study.provenance}</span>
         <span className="eyebrow">{study.subtitle}</span>
         <h1>{study.title}</h1>
         <p className="cs-summary">{study.summary}</p>
+
+        {/* Why a self-built project is here at all — answered before the
+            reader has to wonder, and answered per project rather than once in
+            the abstract, because the answer is different for the capstone. */}
+        <p className="mirrors">
+          <strong>Why this exists.</strong> {study.mirrors}
+        </p>
       </header>
 
       <dl className="factbox rise rise-2">
